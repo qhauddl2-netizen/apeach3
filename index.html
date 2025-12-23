@@ -38,6 +38,7 @@
         </div>
     </div>
 
+    <button id="helpBtn" class="help-btn">도움말</button>
     <button id="shareBtn" class="global-share-btn">공유하기</button>
     <button id="fullRankingBtn" class="global-ranking-btn hidden">전체랭킹</button>
     <!-- 로그인 화면 -->
@@ -103,6 +104,32 @@
                     <button id="leftBtn" class="control-btn">←</button>
                     <button id="rightBtn" class="control-btn">→</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 도움말 모달 -->
+    <div id="helpModal" class="help-modal hidden">
+        <div class="help-container">
+            <button id="closeHelpBtn" class="close-modal">&times;</button>
+            <h2>게임규칙</h2>
+            <div class="help-content">
+              <ul>
+                <li>1) 점프는 연속 3단까지 가능합니다.</li>
+                <li>2) 복숭아: <strong>10점</strong></li>
+                <li>3) 코인: <strong>100점</strong> (적은 출현)</li>
+                <li>4) 폭탄제거: <strong>100점</strong> (위에서 점프로 밟기)</li>
+                <li>5) 별: <strong>500점</strong> (희귀 출현)</li>
+              </ul>
+            </div>
+
+            <h2>점수 및 랭킹</h2>
+            <div class="help-content">
+              <ul>
+                  <li>1) 게임 오버 시 자동으로 점수가 저장됩니다</li>
+                  <li>2) 상위 5명의 랭킹이 표시됩니다</li>
+                  <li>3) 전체 랭킹 버튼으로 상위 50명의 랭킹을 확인할 수 있습니다</li>
+              </ul>
             </div>
         </div>
     </div>

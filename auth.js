@@ -451,4 +451,28 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 랭킹 닫기 버튼
     document.getElementById('closeRankingBtn').addEventListener('click', closeRankingScreen);
+
+    // 도움말 버튼 핸들러
+    const helpBtn = document.getElementById('helpBtn');
+    const helpModal = document.getElementById('helpModal');
+    const closeHelpBtn = document.getElementById('closeHelpBtn');
+    if (helpBtn && helpModal) {
+        helpBtn.addEventListener('click', () => {
+            helpModal.classList.remove('hidden');
+            gamePaused = true;
+        });
+    }
+    if (closeHelpBtn && helpModal) {
+        closeHelpBtn.addEventListener('click', () => {
+            helpModal.classList.add('hidden');
+            gamePaused = false;
+        });
+    }
+    // ESC로 닫기
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && helpModal && !helpModal.classList.contains('hidden')) {
+            helpModal.classList.add('hidden');
+            gamePaused = false;
+        }
+    });
 });
