@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>어피치3</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 로그인 화면 -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-container">
+            <h1>어피치3</h1>
+            <div class="login-form">
+                <input type="text" id="nickname" placeholder="닉네임" maxlength="10">
+                <input type="password" id="password" placeholder="비밀번호 (4자리 숫자)" maxlength="4" pattern="[0-9]*">
+                <button id="loginBtn">로그인</button>
+                <p class="login-message" id="loginMessage"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 게임 화면 -->
+    <div class="game-container hidden" id="gameContainer">
+        <div class="score-panel">
+            <div class="user-info">
+                <span id="currentUser"></span>
+                <button id="logoutBtn" class="logout-btn">로그아웃</button>
+            </div>
+            <div class="score">점수: <span id="score">0</span></div>
+            <div class="lives">생명: <span id="lives">3</span></div>
+            <div class="coins">코인: <span id="coins">0</span></div>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+        <div class="game-over hidden">
+            <h2>게임 오버!</h2>
+            <p>최종 점수: <span id="finalScore">0</span></p>
+            <div id="rankingDisplay" class="ranking-display"></div>
+            <button id="restartBtn">다시 시작</button>
+            <button id="viewRankingBtn">전체 랭킹 보기</button>
+        </div>
+        <div class="controls-info">
+            <p>← → : 이동 | SPACE : 점프</p>
+        </div>
+
+        <!-- 모바일 터치 컨트롤 -->
+        <div class="mobile-controls">
+            <div class="direction-controls">
+                <button id="leftBtn" class="control-btn">←</button>
+                <button id="jumpBtn" class="control-btn jump-btn">점프</button>
+                <button id="rightBtn" class="control-btn">→</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 랭킹 화면 -->
+    <div id="rankingScreen" class="ranking-screen hidden">
+        <div class="ranking-container">
+            <h2>전체 랭킹</h2>
+            <div id="fullRankingList" class="ranking-list"></div>
+            <button id="closeRankingBtn">닫기</button>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>

@@ -1,0 +1,442 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(to bottom, #5c94fc 0%, #5c94fc 70%, #8b6d4d 70%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+.game-container {
+    text-align: center;
+    background: #000;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.score-panel {
+    display: flex;
+    justify-content: space-around;
+    background: #222;
+    color: #fff;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.score-panel > div {
+    display: flex;
+    gap: 10px;
+}
+
+.score-panel span {
+    color: #ffd700;
+}
+
+#gameCanvas {
+    border: 3px solid #444;
+    background: #5c94fc;
+    display: block;
+    margin: 0 auto;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+.game-over {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.95);
+    color: #fff;
+    padding: 40px;
+    border-radius: 15px;
+    text-align: center;
+    border: 3px solid #ffd700;
+    z-index: 999;
+}
+
+.game-over h2 {
+    font-size: 48px;
+    color: #ff4444;
+    margin-bottom: 20px;
+}
+
+.game-over p {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+#restartBtn {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    font-size: 20px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background 0.3s;
+}
+
+#restartBtn:hover {
+    background: #45a049;
+}
+
+.controls-info {
+    color: #fff;
+    margin-top: 15px;
+    font-size: 14px;
+    background: #222;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.controls-info p {
+    margin: 0;
+}
+
+/* 로그인 화면 */
+.login-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    z-index: 1000;
+}
+
+.login-container {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 50px;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    min-width: 350px;
+}
+
+.login-container h1 {
+    font-size: 36px;
+    color: #333;
+    margin-bottom: 30px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.login-form input {
+    width: 100%;
+    padding: 15px;
+    margin-bottom: 15px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+.login-form input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.login-form button {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.login-form button:hover {
+    transform: scale(1.02);
+}
+
+.login-message {
+    margin-top: 15px;
+    font-size: 14px;
+    min-height: 20px;
+}
+
+.login-message.success {
+    color: #4CAF50;
+}
+
+.login-message.error {
+    color: #f44336;
+}
+
+.login-message.warning {
+    color: #ff9800;
+}
+
+/* 사용자 정보 */
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logout-btn {
+    background: #f44336;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.logout-btn:hover {
+    background: #d32f2f;
+}
+
+/* 랭킹 화면 */
+.ranking-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 2000;
+}
+
+.ranking-container {
+    background: #fff;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.ranking-container h2 {
+    font-size: 32px;
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.ranking-list {
+    margin-bottom: 20px;
+}
+
+.ranking-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.ranking-table th,
+.ranking-table td {
+    color:#000;
+    padding: 12px;
+    text-align: center;
+    border: 1px solid #000;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.ranking-table th {
+    background: #667eea;
+    color: white;
+    font-weight: bold;
+}
+
+.ranking-table tr:hover {
+    background: #f5f5f5;
+}
+
+.ranking-table tr.current-user {
+    background: #fff3cd;
+    font-weight: bold;
+}
+
+#closeRankingBtn {
+    width: 100%;
+    padding: 15px;
+    background: #666;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+#closeRankingBtn:hover {
+    background: #555;
+}
+
+.ranking-display {
+    margin: 20px 0;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+}
+
+.ranking-display h3 {
+    color: #ffd700;
+    margin-bottom: 10px;
+}
+
+#viewRankingBtn {
+    background: #2196F3;
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    font-size: 18px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-left: 10px;
+    transition: background 0.3s;
+}
+
+#viewRankingBtn:hover {
+    background: #1976D2;
+}
+
+/* 모바일 터치 컨트롤 */
+.mobile-controls {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    padding: 0 20px;
+    z-index: 100;
+}
+
+.direction-controls {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+}
+
+.control-btn {
+    background: rgba(255, 255, 255, 0.9);
+    border: 3px solid #333;
+    border-radius: 15px;
+    font-size: 32px;
+    font-weight: bold;
+    color: #333;
+    width: 80px;
+    height: 80px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    transition: all 0.1s;
+}
+
+.control-btn:active {
+    background: rgba(200, 200, 200, 0.9);
+    transform: scale(0.95);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.jump-btn {
+    width: 80px;
+    height: 80px;
+    background: rgba(76, 175, 80, 0.9);
+    color: white;
+    border-color: #2e7d32;
+}
+
+.jump-btn:active {
+    background: rgba(56, 142, 60, 0.9);
+}
+
+/* 모바일 디바이스에서만 터치 컨트롤 표시 */
+@media (max-width: 768px) {
+    .mobile-controls {
+        display: block;
+    }
+
+    .controls-info {
+        display: none;
+    }
+
+    .game-container {
+        padding: 10px;
+    }
+
+    .score-panel {
+        font-size: 14px;
+        padding: 10px;
+        flex-wrap: wrap;
+    }
+
+    .score-panel > div {
+        font-size: 12px;
+    }
+
+    #gameCanvas {
+        max-width: 100%;
+        height: auto;
+    }
+
+    .game-over {
+        padding: 20px;
+        max-width: 100%;
+        width:90%;
+    }
+
+    .game-over h2 {
+        font-size: 32px;
+    }
+
+    .game-over p {
+        font-size: 18px;
+    }
+
+    #restartBtn,
+    #viewRankingBtn {
+        padding: 12px 20px;
+        font-size: 16px;
+        margin: 5px;
+    }
+
+    .login-container {
+        padding: 30px;
+        min-width: auto;
+        width: 90%;
+    }
+
+    .ranking-container {
+        padding: 20px;
+        max-width: 90%;
+    }
+}
+
+/* 터치 디바이스 감지 */
+@media (hover: none) and (pointer: coarse) {
+    .mobile-controls {
+        display: block;
+    }
+}
