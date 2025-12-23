@@ -473,11 +473,22 @@ async function gameOver() {
 
     // 점수 저장
     if (typeof saveScore === 'function') {
-        await saveScore(score);
+        try {
+            await saveScore(score);
+            console.log('점수 저장 성공:', score);
 
-        // 랭킹 표시
-        const rankings = await getRankings();
-        displayRankingPreview(rankings);
+            // 랭킹 표시
+            try {
+                const rankings = await getRankings();
+                displayRankingPreview(rankings);
+            } catch (rankingErr) {
+                console.error('랭킹 조회 오류:', rankingErr);
+                document.getElementById('rankingDisplay').innerHTML = '<p>랭킹을 불러올 수 없습니다.</p>';
+            }
+        } catch (saveErr) {
+            console.error('점수 저장 오류:', saveErr);
+            alert('점수 저장 실패: ' + (saveErr.message || saveErr));
+        }
     }
 
     document.querySelector('.game-over').classList.remove('hidden');

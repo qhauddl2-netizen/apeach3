@@ -23,7 +23,7 @@
             <!-- 로그인 폼 -->
             <div class="login-form" id="loginForm">
                 <input type="email" id="loginEmail" placeholder="이메일" maxlength="100" required>
-                <input type="password" id="loginPassword" placeholder="비밀번호 (4자리 숫자)" maxlength="4" pattern="[0-9]{4}" inputmode="numeric" required>
+                <input type="password" id="loginPassword" placeholder="비밀번호 (6자 이상)" minlength="6" required>
                 <button id="loginSubmitBtn">로그인</button>
                 <p class="login-message" id="loginMessage"></p>
             </div>
@@ -32,8 +32,8 @@
             <div class="login-form hidden" id="signupForm">
                 <input type="email" id="signupEmail" placeholder="이메일" maxlength="100" required>
                 <input type="text" id="signupNickname" placeholder="닉네임" maxlength="10" required>
-                <input type="password" id="signupPassword" placeholder="비밀번호 (4자리 숫자)" maxlength="4" pattern="[0-9]{4}" inputmode="numeric" required>
-                <input type="password" id="signupPasswordConfirm" placeholder="비밀번호 확인 (4자리 숫자)" maxlength="4" pattern="[0-9]{4}" inputmode="numeric" required>
+                <input type="password" id="signupPassword" placeholder="비밀번호 (6자 이상)" minlength="6" required>
+                <input type="password" id="signupPasswordConfirm" placeholder="비밀번호 확인 (6자 이상)" minlength="6" required>
                 <button id="signupSubmitBtn">회원가입</button>
                 <p class="login-message" id="signupMessage"></p>
             </div>
@@ -83,7 +83,7 @@
     </div>
 
 
-        <script>
+        <script type="module">
             // Import the functions you need from the SDKs you need
             import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
             import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-analytics.js";
@@ -127,6 +127,7 @@
             // Expose firestore helpers to non-module scripts
             const db = getFirestore(app);
             const auth = getAuth(app);
+
             // Attach to window for legacy scripts
             window.firebaseApp = app;
             window.firebaseAnalytics = analytics;
@@ -138,6 +139,10 @@
                 // Auth
                 createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile, onAuthStateChanged
             };
+
+            // Firebase 준비 완료 신호
+            window.firebaseReady = true;
+            console.log('Firebase initialized and exposed to window');
         </script>
 
     <script src="auth.js"></script>

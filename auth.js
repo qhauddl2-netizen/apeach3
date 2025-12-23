@@ -1,22 +1,6 @@
-// Firebase 기반 인증/점수 저장 (Firestore) + 로컬 폴백
+// Firebase 기반 인증/점수 저장 (Firestore만 사용)
 
 let currentUser = null;
-let gameData = { scores: [] };
-
-function saveData() {
-    localStorage.setItem('marioGameData', JSON.stringify(gameData));
-}
-
-function restoreGameData() {
-    const savedData = localStorage.getItem('marioGameData');
-    if (savedData) {
-        try {
-            gameData = JSON.parse(savedData);
-        } catch (e) {
-            gameData = { scores: [] };
-        }
-    }
-}
 
 function checkLocalAuth() {
     const savedUser = localStorage.getItem('marioUser');
@@ -59,7 +43,11 @@ function hasFirestore() {
 }
 
 function hasAuth() {
-    return window.auth && window.firebaseFns && window.firebaseFns.signInWithEmailAndPassword;
+    const has = window.auth && window.firebaseFns && window.firebaseFns.signInWithEmailAndPassword;
+    if (!has) {
+        console.warn('Firebase not ready:', { auth: !!window.auth, firebaseFns: !!window.firebaseFns, firebaseReady: window.firebaseReady });
+    }
+    return has;
 }
 
 // 로그인
@@ -69,8 +57,8 @@ async function login(email, password) {
         return;
     }
 
-    if (password.length !== 4 || !/^\d{4}$/.test(password)) {
-        showMessage('비밀번호는 4자리 숫자여야 합니다.', 'error');
+    if (password.length < 6) {
+        showMessage('비밀번호는 6자 이상이어야 합니다.', 'error');
         return;
     }
 
@@ -90,20 +78,23 @@ async function login(email, password) {
         } catch (err) {
             console.error('Firebase signIn error', err.code, err);
             if (err && err.code) {
-                if (err.code === 'auth/wrong-password') {
-                    showMessage('비밀번호가 틀렸습니다.', 'error');
+                // Check more specific errors first
+                if (err.code === 'auth/invalid-email') {
+                    showMessage('유효하지 않은 이메일 형식입니다.', 'error');
                     return;
                 }
                 if (err.code === 'auth/user-not-found') {
                     showMessage('등록되지 않은 이메일입니다. 회원가입을 진행해주세요.', 'error');
                     return;
                 }
-                if (err.code === 'auth/invalid-email') {
-                    showMessage('유효하지 않은 이메일 형식입니다.', 'error');
+                if (err.code === 'auth/wrong-password') {
+                    showMessage('비밀번호가 틀렸습니다.', 'error');
                     return;
                 }
+                // auth/invalid-credential usually means user-not-found or wrong-password
+                // treat it as user-not-found for better UX
                 if (err.code === 'auth/invalid-credential') {
-                    showMessage('인증 자격이 잘못되었습니다. Firebase 설정을 확인하세요.', 'error');
+                    showMessage('등록되지 않은 이메일이거나 비밀번호가 틀렸습니다.', 'error');
                     return;
                 }
             }
@@ -112,17 +103,7 @@ async function login(email, password) {
         }
     }
 
-    // Local fallback
-    const users = (gameData.users || []);
-    const found = users.find(u => u.email === email && u.password === password);
-    if (found) {
-        currentUser = { email: found.email, nickname: found.nickname || '' };
-        localStorage.setItem('marioUser', JSON.stringify(currentUser));
-        showMessage('로그인 성공 (로컬)', 'success');
-        setTimeout(showGameScreen, 300);
-    } else {
-        showMessage('이메일 또는 비밀번호가 일치하지 않습니다.', 'error');
-    }
+    showMessage('Firebase 서버에 연결할 수 없습니다.', 'error');
 }
 
 // 회원가입
@@ -137,8 +118,8 @@ async function signup(email, nickname, password, passwordConfirm) {
         return;
     }
 
-    if (password.length !== 4 || !/^\d{4}$/.test(password)) {
-        showSignupMessage('비밀번호는 4자리 숫자여야 합니다.', 'error');
+    if (password.length < 6) {
+        showSignupMessage('비밀번호는 6자 이상이어야 합니다.', 'error');
         return;
     }
 
@@ -181,29 +162,13 @@ async function signup(email, nickname, password, passwordConfirm) {
                     showSignupMessage('유효하지 않은 이메일 형식입니다.', 'error');
                     return;
                 }
-                if (err.code === 'auth/weak-password') {
-                    showSignupMessage('비밀번호가 너무 약합니다.', 'error');
-                    return;
-                }
             }
             showSignupMessage('회원가입 실패: ' + (err.message || err.code), 'error');
             return;
         }
     }
 
-    // Local fallback
-    const users = (gameData.users || []);
-    if (users.find(u => u.email === email)) {
-        showSignupMessage('이미 가입된 이메일입니다.', 'error');
-        return;
-    }
-    users.push({ email, password, nickname });
-    gameData.users = users;
-    saveData();
-    currentUser = { email, nickname };
-    localStorage.setItem('marioUser', JSON.stringify(currentUser));
-    showSignupMessage('회원가입 성공 (로컬)! 로그인됩니다.', 'success');
-    setTimeout(showGameScreen, 500);
+    showSignupMessage('Firebase 서버에 연결할 수 없습니다.', 'error');
 }
 
 async function logout() {
@@ -219,7 +184,7 @@ async function logout() {
     location.reload();
 }
 
-// Save score to Firestore (or local fallback)
+// Save score to Firestore
 async function saveScore(score) {
     if (!currentUser) return;
 
@@ -235,27 +200,18 @@ async function saveScore(score) {
         const db = window.db;
         try {
             await addDoc(collection(db, 'scores'), { nickname: entry.nickname, email: entry.email, uid: entry.uid, score: entry.score, createdAt: serverTimestamp() });
-            // local backup
-            gameData.scores.push(entry);
-            saveData();
             return { message: '점수 저장 완료', score };
         } catch (err) {
             console.error('Firestore 점수 저장 오류:', err);
-            gameData.scores.push(entry);
-            saveData();
-            return { message: '로컬에 저장됨(업로드 실패)', score };
+            throw err;
         }
     } else {
-        // local fallback
-        gameData.scores.push(entry);
-        saveData();
-        return { message: '로컬에 저장됨', score };
+        throw new Error('Firebase 서버에 연결할 수 없습니다.');
     }
 }
 
-// Get rankings (prefer Firestore)
+// Get rankings (Firestore only)
 async function getRankings() {
-    // Try Firestore: fetch top N and dedupe by nickname keeping best score
     if (hasFirestore()) {
         const { collection, query, orderBy, limit, getDocs } = window.firebaseFns;
         const db = window.db;
@@ -279,23 +235,11 @@ async function getRankings() {
             return rankings;
         } catch (err) {
             console.error('Firestore 랭킹 조회 오류:', err);
-            // fallthrough to local
+            throw err;
         }
     }
 
-    // Local fallback
-    const userBestScores = {};
-    gameData.scores.forEach(scoreEntry => {
-        if (!userBestScores[scoreEntry.nickname] || userBestScores[scoreEntry.nickname].score < scoreEntry.score) {
-            userBestScores[scoreEntry.nickname] = scoreEntry;
-        }
-    });
-
-    const rankings = Object.values(userBestScores)
-        .sort((a, b) => b.score - a.score)
-        .slice(0, 50);
-
-    return rankings;
+    throw new Error('Firebase 서버에 연결할 수 없습니다.');
 }
 
 // Ranking screen
@@ -324,7 +268,20 @@ async function showRankingScreen() {
 
 // 초기화 및 이벤트 바인딩
 document.addEventListener('DOMContentLoaded', async () => {
-    restoreGameData();
+    // Firebase 준비 대기
+    let retries = 0;
+    while (!window.firebaseReady && retries < 50) {
+        await new Promise(r => setTimeout(r, 100));
+        retries++;
+    }
+
+    if (!window.firebaseReady) {
+        console.error('Firebase failed to initialize after 5 seconds');
+        alert('Firebase 초기화 실패. 콘솔을 확인하세요.');
+    } else {
+        console.log('Firebase ready, proceeding with auth setup');
+    }
+
     checkLocalAuth();
 
     // 모드 토글
