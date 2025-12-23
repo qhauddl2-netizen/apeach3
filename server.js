@@ -4,7 +4,7 @@ const path = require('path');
 const cors = require('cors');
 
 const app = express();
-const PORT = 3000;
+const PORT = 5500;
 
 app.use(cors());
 app.use(express.json());
@@ -132,4 +132,5 @@ app.get('/rankings', (req, res) => {
 initDataFile();
 app.listen(PORT, () => {
     console.log(`서버가 http://localhost:${PORT} 에서 실행중입니다.`);
+    console.log(`브라우저에서 http://localhost:${PORT} 로 접속하세요.`);
 });
