@@ -257,6 +257,24 @@ body {
     background: #388E3C;
 }
 
+/* 전체랭킹 고정 버튼 (화면 외부) */
+.global-ranking-btn {
+    position: fixed;
+    top: 18px;
+    right: 18px;
+    background: #4CAF50;
+    color: #fff;
+    border: none;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    z-index: 1200;
+}
+
+.global-ranking-btn:hover { background: #388E3C; }
+
 /* 랭킹 화면 */
 .ranking-screen {
     position: fixed;
