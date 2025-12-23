@@ -12,6 +12,9 @@ let gameRunning = true;
 let gamePaused = false;
 let keys = {};
 
+// 이전 프레임의 키 상태 (2단 점프를 위해 점프 키를 누른 순간만 감지)
+let prevKeys = {};
+
 // Player images
 const playerImages = {
     idle: new Image(),
@@ -57,6 +60,13 @@ allImages.forEach(img => {
 });
 
 // Player object
+// 모바일 디바이스 감지
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                 window.innerWidth <= 768;
+
+// 모바일에서는 속도를 1/3로 감소
+const speedMultiplier = isMobile ? 0.5 : 1.0;
+
 const player = {
     x: 100,
     y: 400,
@@ -64,8 +74,8 @@ const player = {
     height: 64,
     velocityX: 0,
     velocityY: 0,
-    speed: 5,
-    jumpPower: 15,
+    speed: 5 * speedMultiplier,
+    jumpPower: 10,
     onGround: false,
     direction: 0,
     currentImage: 'idle',
@@ -74,7 +84,8 @@ const player = {
     isHit: false,
     hitTimer: 0,
     invincible: false,
-    invincibleTimer: 0
+    invincibleTimer: 0,
+    jumpsRemaining: 3  // 3단 점프를 위한 점프 횟수
 };
 
 // Gravity
@@ -114,10 +125,14 @@ for (let i = 0; i < 8; i++) {
 
 // Enemies
 const enemies = [
-    { x: 300, y: 520, width: 40, height: 40, velocityX: 2, direction: 1, velocityY: 0, isFlying: false },
-    { x: 500, y: 320, width: 40, height: 40, velocityX: 1.5, direction: 1, velocityY: 1, isFlying: true },
-    { x: 150, y: 200, width: 40, height: 40, velocityX: 2.5, direction: 1, velocityY: -1, isFlying: true },
-    { x: 650, y: 520, width: 40, height: 40, velocityX: 1.8, direction: -1, velocityY: 0, isFlying: false }
+    { x: 300, y: 520, width: 40, height: 40, velocityX: 2 * speedMultiplier, direction: 1, velocityY: 0, isFlying: false },
+    { x: 500, y: 320, width: 40, height: 40, velocityX: 1.5 * speedMultiplier, direction: 1, velocityY: 1, isFlying: true },
+    { x: 150, y: 200, width: 40, height: 40, velocityX: 2.5 * speedMultiplier, direction: 1, velocityY: -1, isFlying: true },
+    { x: 650, y: 520, width: 40, height: 40, velocityX: 1.8 * speedMultiplier, direction: -1, velocityY: 0, isFlying: false },
+    { x: 400, y: 250, width: 40, height: 40, velocityX: 2.2 * speedMultiplier, direction: 1, velocityY: 0.5, isFlying: true },
+    { x: 200, y: 520, width: 40, height: 40, velocityX: 1.9 * speedMultiplier, direction: 1, velocityY: 0, isFlying: false },
+    { x: 550, y: 150, width: 40, height: 40, velocityX: 2.1 * speedMultiplier, direction: -1, velocityY: -0.5, isFlying: true },
+    { x: 700, y: 520, width: 40, height: 40, velocityX: 1.7 * speedMultiplier, direction: -1, velocityY: 0, isFlying: false }
 ];
 
 // Stars
@@ -251,10 +266,11 @@ function updatePlayer() {
         }
     }
 
-    // Jump
-    if (keys['Space'] && player.onGround) {
+    // Jump (2단 점프 지원) - Space 키를 새로 누른 순간만 점프
+    if (keys['Space'] && !prevKeys['Space'] && player.jumpsRemaining > 0) {
         player.velocityY = -player.jumpPower;
         player.onGround = false;
+        player.jumpsRemaining--;
     }
 
     // Apply gravity
@@ -291,6 +307,7 @@ function checkPlatformCollisions() {
             player.y = platform.y - player.height;
             player.velocityY = 0;
             player.onGround = true;
+            player.jumpsRemaining = 3;  // 착지시 점프 횟수 초기화 (3단 점프)
         }
     });
 }
@@ -317,7 +334,7 @@ function spawnEnemy() {
         y: spawnY,
         width: 40,
         height: 40,
-        velocityX: 2 + Math.random() * 2,
+        velocityX: (2 + Math.random() * 2) * speedMultiplier,
         velocityY: velocityY,
         direction: spawnX === 0 ? 1 : -1,
         isFlying: isFlying,
@@ -382,6 +399,7 @@ function updateEnemies() {
                 enemy.x = -1000; // Remove enemy
                 score += 100;
                 player.velocityY = -10; // Bounce
+                spawnEnemy(); // 적을 밟을 때 새로운 적 생성
             } else {
                 loseLife();
             }
@@ -743,6 +761,9 @@ function gameLoop() {
 
     // Update UI
     updateScoreDisplay();
+
+    // 현재 키 상태를 이전 프레임으로 업데이트
+    prevKeys = { ...keys };
 
     requestAnimationFrame(gameLoop);
 }
