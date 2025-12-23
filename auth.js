@@ -414,6 +414,38 @@ document.addEventListener('DOMContentLoaded', async () => {
         fullRankingBtn.addEventListener('click', showRankingScreen);
     }
 
+    // 공유 버튼
+    const shareBtn = document.getElementById('shareBtn');
+    if (shareBtn) {
+        shareBtn.addEventListener('click', async () => {
+            const shareData = {
+                title: 'Mario Game',
+                text: '지금 내 점수를 확인해보세요!',
+                url: location.href
+            };
+            try {
+                if (navigator.share) {
+                    await navigator.share(shareData);
+                } else if (navigator.clipboard) {
+                    await navigator.clipboard.writeText(shareData.url);
+                    alert('공유 링크가 복사되었습니다. 붙여넣기하세요.');
+                } else {
+                    // fallback
+                    const tmp = document.createElement('textarea');
+                    tmp.value = shareData.url;
+                    document.body.appendChild(tmp);
+                    tmp.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tmp);
+                    alert('공유 링크가 복사되었습니다. 붙여넣기하세요.');
+                }
+            } catch (e) {
+                console.warn('공유 실패', e);
+                alert('공유에 실패했습니다.');
+            }
+        });
+    }
+
     // 랭킹 보기 버튼 (게임오버)
     document.getElementById('viewRankingBtn').addEventListener('click', showRankingScreen);
 
