@@ -5,17 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>어피치3</title>
     <link rel="stylesheet" href="style.css">
+
+
 </head>
 <body>
     <!-- 로그인 화면 -->
     <div id="loginScreen" class="login-screen">
         <div class="login-container">
             <h1><img src="img/me.png" alt="" style="width:30px;"> APEACH3</h1>
-            <div class="login-form">
-                <input type="text" id="nickname" placeholder="닉네임" maxlength="10">
-                <input type="password" id="password" placeholder="비밀번호 (4자리 숫자)" maxlength="4" pattern="[0-9]*">
-                <button id="loginBtn">로그인</button>
+
+            <!-- 모드 토글 버튼 -->
+            <div class="auth-mode-toggle">
+                <button id="loginModeBtn" class="mode-btn active">로그인</button>
+                <button id="signupModeBtn" class="mode-btn">회원가입</button>
+            </div>
+
+            <!-- 로그인 폼 -->
+            <div class="login-form" id="loginForm">
+                <input type="email" id="loginEmail" placeholder="이메일" maxlength="100" required>
+                <input type="password" id="loginPassword" placeholder="비밀번호 (4자리 숫자)" maxlength="4" pattern="[0-9]{4}" inputmode="numeric" required>
+                <button id="loginSubmitBtn">로그인</button>
                 <p class="login-message" id="loginMessage"></p>
+            </div>
+
+            <!-- 회원가입 폼 -->
+            <div class="login-form hidden" id="signupForm">
+                <input type="email" id="signupEmail" placeholder="이메일" maxlength="100" required>
+                <input type="text" id="signupNickname" placeholder="닉네임" maxlength="10" required>
+                <input type="password" id="signupPassword" placeholder="비밀번호 (4자리 숫자)" maxlength="4" pattern="[0-9]{4}" inputmode="numeric" required>
+                <input type="password" id="signupPasswordConfirm" placeholder="비밀번호 확인 (4자리 숫자)" maxlength="4" pattern="[0-9]{4}" inputmode="numeric" required>
+                <button id="signupSubmitBtn">회원가입</button>
+                <p class="login-message" id="signupMessage"></p>
             </div>
         </div>
     </div>
@@ -61,6 +81,64 @@
             <button id="closeRankingBtn">닫기</button>
         </div>
     </div>
+
+
+        <script>
+            // Import the functions you need from the SDKs you need
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+            import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-analytics.js";
+            import { getAuth } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+            import {
+                createUserWithEmailAndPassword,
+                signInWithEmailAndPassword,
+                signOut,
+                updateProfile,
+                onAuthStateChanged
+            } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+            import {
+                getFirestore,
+                doc,
+                getDoc,
+                setDoc,
+                addDoc,
+                collection,
+                query,
+                orderBy,
+                limit,
+                getDocs,
+                serverTimestamp
+            } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+
+            // Your web app's Firebase configuration
+            const firebaseConfig = {
+                apiKey: "AIzaSyC7WSarYMryIsfxvu4HqSyTOoNBQm0xVIk",
+                authDomain: "apeach-6a42c.firebaseapp.com",
+                projectId: "apeach-6a42c",
+                storageBucket: "apeach-6a42c.firebasestorage.app",
+                messagingSenderId: "546839254226",
+                appId: "1:546839254226:web:61cf44a3086841d33ec90b",
+                measurementId: "G-ZQSX4SFR7P"
+            };
+
+            // Initialize Firebase
+            const app = initializeApp(firebaseConfig);
+            const analytics = getAnalytics(app);
+
+            // Expose firestore helpers to non-module scripts
+            const db = getFirestore(app);
+            const auth = getAuth(app);
+            // Attach to window for legacy scripts
+            window.firebaseApp = app;
+            window.firebaseAnalytics = analytics;
+            window.db = db;
+            window.auth = auth;
+            window.firebaseFns = {
+                // Firestore
+                doc, getDoc, setDoc, addDoc, collection, query, orderBy, limit, getDocs, serverTimestamp,
+                // Auth
+                createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile, onAuthStateChanged
+            };
+        </script>
 
     <script src="auth.js"></script>
     <script src="game.js"></script>

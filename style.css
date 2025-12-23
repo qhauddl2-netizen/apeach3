@@ -139,6 +139,37 @@ body {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* 모드 토글 버튼 */
+.auth-mode-toggle {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #ddd;
+}
+
+.mode-btn {
+    flex: 1;
+    padding: 12px 20px;
+    background: #f5f5f5;
+    color: #999;
+    border: none;
+    border-radius: 8px 8px 0 0;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.mode-btn:hover {
+    background: #efefef;
+}
+
+.mode-btn.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-bottom: 3px solid #667eea;
+}
+
 .login-form input {
     width: 100%;
     padding: 15px;
