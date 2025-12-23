@@ -26,7 +26,19 @@
 
 </head>
 <body>
-    <button id="fullRankingBtn" class="global-ranking-btn">전체랭킹보기</button>
+    <!-- 로딩 화면 -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-container">
+            <img src="img/me.png" alt="Loading" class="loading-logo">
+            <h2>APEACH3</h2>
+            <div class="loading-bar">
+                <div class="loading-progress"></div>
+            </div>
+            <p class="loading-text">게임을 불러오는 중...</p>
+        </div>
+    </div>
+
+    <button id="fullRankingBtn" class="global-ranking-btn hidden">전체랭킹</button>
     <!-- 로그인 화면 -->
     <div id="loginScreen" class="login-screen">
         <div class="login-container">
@@ -71,6 +83,7 @@
         </div>
         <canvas id="gameCanvas"></canvas>
         <div class="game-over hidden">
+            <button class="close-btn" id="closeGameOverBtn">&times;</button>
             <h2>게임 오버!</h2>
             <p>최종 점수: <span id="finalScore">0</span></p>
             <div id="rankingDisplay" class="ranking-display"></div>
@@ -85,8 +98,10 @@
         <div class="mobile-controls">
             <div class="direction-controls">
                 <button id="jumpBtn" class="control-btn jump-btn">점프</button>
-                <button id="leftBtn" class="control-btn">←</button>
-                <button id="rightBtn" class="control-btn">→</button>
+                <div class="left-right-group">
+                    <button id="leftBtn" class="control-btn">←</button>
+                    <button id="rightBtn" class="control-btn">→</button>
+                </div>
             </div>
         </div>
     </div>

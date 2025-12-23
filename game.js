@@ -189,6 +189,12 @@ document.getElementById('restartBtn').addEventListener('click', () => {
     location.reload();
 });
 
+// Close game over button
+document.getElementById('closeGameOverBtn').addEventListener('click', () => {
+    document.querySelector('.game-over').classList.add('hidden');
+    gameRunning = true;
+});
+
 // Update player
 function updatePlayer() {
     // Update hit timer - 피격 중에는 아래로 떨어지기만 함

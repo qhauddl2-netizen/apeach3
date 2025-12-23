@@ -28,8 +28,12 @@ function showSignupMessage(message, type) {
 function showGameScreen() {
     document.getElementById('loginScreen').classList.add('hidden');
     document.getElementById('gameContainer').classList.remove('hidden');
+    const fullRankingBtn = document.getElementById('fullRankingBtn');
+    if (fullRankingBtn) {
+        fullRankingBtn.classList.remove('hidden');
+    }
     if (currentUser && document.getElementById('currentUser')) {
-        document.getElementById('currentUser').textContent = `플레이어: ${currentUser.nickname}`;
+        document.getElementById('currentUser').textContent = `${currentUser.nickname} 님`;
     }
 }
 
@@ -264,30 +268,63 @@ async function getRankings() {
 // Ranking screen
 async function showRankingScreen() {
     gamePaused = true; // 게임 일시정지
-    const rankings = await getRankings();
     const rankingList = document.getElementById('fullRankingList');
 
     if (!rankingList) return;
 
-    if (rankings.length === 0) {
-        rankingList.innerHTML = '<p>아직 랭킹 정보가 없습니다.</p>';
-    } else {
-        let html = '<table class="ranking-table"><thead><tr><th>순위</th><th>닉네임</th><th>점수</th><th>날짜</th></tr></thead><tbody>';
-        rankings.forEach((item, index) => {
-            const isCurrentUser = currentUser && item.nickname === currentUser.nickname;
-            const rowClass = isCurrentUser ? 'current-user' : '';
-            const date = item.date ? new Date(item.date).toLocaleDateString('ko-KR') : '';
-            html += `<tr class="${rowClass}">\n                <td>${index + 1}</td>\n                <td>${item.nickname}</td>\n                <td>${item.score}</td>\n                <td>${date}</td>\n            </tr>`;
-        });
-        html += '</tbody></table>';
-        rankingList.innerHTML = html;
-    }
-
+    // 로딩 표시
+    rankingList.innerHTML = '<div class="ranking-loading"><div class="spinner"></div><p>랭킹 불러오는 중...</p></div>';
     document.getElementById('rankingScreen').classList.remove('hidden');
+
+    try {
+        const rankings = await getRankings();
+
+        if (rankings.length === 0) {
+            rankingList.innerHTML = '<p>아직 랭킹 정보가 없습니다.</p>';
+        } else {
+            let html = '<table class="ranking-table"><thead><tr><th>순위</th><th>닉네임</th><th>점수</th><th>날짜</th></tr></thead><tbody>';
+            rankings.forEach((item, index) => {
+                const isCurrentUser = currentUser && item.nickname === currentUser.nickname;
+                const rowClass = isCurrentUser ? 'current-user' : '';
+                const date = item.date ? new Date(item.date).toLocaleDateString('ko-KR') : '';
+                html += `<tr class="${rowClass}">\n                <td>${index + 1}</td>\n                <td>${item.nickname}</td>\n                <td>${item.score}</td>\n                <td>${date}</td>\n            </tr>`;
+            });
+            html += '</tbody></table>';
+            rankingList.innerHTML = html;
+        }
+    } catch (error) {
+        rankingList.innerHTML = '<p style="color: #f44336;">랭킹을 불러올 수 없습니다.</p>';
+        console.error('랭킹 조회 오류:', error);
+    }
+}
+
+// 로딩 화면 숨기기
+function hideLoadingScreen() {
+    const loadingScreen = document.getElementById('loadingScreen');
+    const loginScreen = document.getElementById('loginScreen');
+
+    if (loadingScreen) {
+        loadingScreen.classList.add('hidden');
+    }
+    if (loginScreen && !document.getElementById('gameContainer').classList.contains('hidden')) {
+        // 게임 화면이 표시 중이면 로그인 화면 숨김
+        loginScreen.classList.add('hidden');
+    }
+    // 전체랭킹보기 버튼은 게임 화면에서만 표시 (showGameScreen에서 처리)
+}
+
+// 로딩 텍스트 업데이트
+function updateLoadingText(text) {
+    const loadingText = document.querySelector('.loading-text');
+    if (loadingText) {
+        loadingText.textContent = text;
+    }
 }
 
 // 초기화 및 이벤트 바인딩
 document.addEventListener('DOMContentLoaded', async () => {
+    updateLoadingText('Firebase 초기화 중...');
+
     // Firebase 준비 대기
     let retries = 0;
     while (!window.firebaseReady && retries < 50) {
@@ -297,12 +334,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (!window.firebaseReady) {
         console.error('Firebase failed to initialize after 5 seconds');
-        alert('Firebase 초기화 실패. 콘솔을 확인하세요.');
+        updateLoadingText('Firebase 초기화 실패');
+        setTimeout(() => {
+            hideLoadingScreen();
+            alert('Firebase 초기화 실패. 콘솔을 확인하세요.');
+        }, 500);
     } else {
         console.log('Firebase ready, proceeding with auth setup');
+        updateLoadingText('로그인 정보 확인 중...');
     }
 
     checkLocalAuth();
+
+    // 로딩 완료
+    setTimeout(() => {
+        hideLoadingScreen();
+    }, 800);
 
     // 모드 토글
     const loginModeBtn = document.getElementById('loginModeBtn');
