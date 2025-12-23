@@ -9,6 +9,7 @@ let score = 0;
 let coins = 0;
 let lives = 3;
 let gameRunning = true;
+let gamePaused = false;
 let keys = {};
 
 // Player images
@@ -718,12 +719,14 @@ function gameLoop() {
     // Draw background elements
     drawClouds();
 
-    // Update game objects
-    updatePlayer();
-    checkPlatformCollisions();
-    updateEnemies();
-    collectCollectibles();
-    collectStars();
+    // Update game objects only if not paused
+    if (!gamePaused) {
+        updatePlayer();
+        checkPlatformCollisions();
+        updateEnemies();
+        collectCollectibles();
+        collectStars();
+    }
 
     // Draw game objects
     drawPlatforms();

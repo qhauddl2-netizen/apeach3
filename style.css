@@ -242,6 +242,21 @@ body {
     background: #d32f2f;
 }
 
+.ranking-btn {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.ranking-btn:hover {
+    background: #388E3C;
+}
+
 /* 랭킹 화면 */
 .ranking-screen {
     position: fixed;

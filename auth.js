@@ -35,6 +35,7 @@ function showGameScreen() {
 
 function closeRankingScreen() {
     document.getElementById('rankingScreen').classList.add('hidden');
+    gamePaused = false; // 게임 재개
 }
 
 // Firebase helpers available on window (set in index.html)
@@ -121,6 +122,24 @@ async function signup(email, nickname, password, passwordConfirm) {
     if (password.length < 6) {
         showSignupMessage('비밀번호는 6자 이상이어야 합니다.', 'error');
         return;
+    }
+
+    // Check nickname uniqueness first
+    if (hasFirestore()) {
+        const { collection, query, where, getDocs } = window.firebaseFns;
+        const db = window.db;
+        try {
+            const usersRef = collection(db, 'users');
+            const q = query(usersRef, where('displayName', '==', nickname));
+            const snapshot = await getDocs(q);
+            if (!snapshot.empty) {
+                showSignupMessage('이미 사용 중인 닉네임입니다.', 'error');
+                return;
+            }
+        } catch (e) {
+            console.warn('Nickname check failed', e);
+            // Continue anyway, will handle in createUser error
+        }
     }
 
     // Use Firebase Auth if available
@@ -244,6 +263,7 @@ async function getRankings() {
 
 // Ranking screen
 async function showRankingScreen() {
+    gamePaused = true; // 게임 일시정지
     const rankings = await getRankings();
     const rankingList = document.getElementById('fullRankingList');
 
@@ -341,7 +361,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 로그아웃 버튼
     document.getElementById('logoutBtn').addEventListener('click', logout);
 
-    // 랭킹 보기 버튼
+    // 전체랭킹보기 버튼 (게임 중)
+    const fullRankingBtn = document.getElementById('fullRankingBtn');
+    if (fullRankingBtn) {
+        fullRankingBtn.addEventListener('click', showRankingScreen);
+    }
+
+    // 랭킹 보기 버튼 (게임오버)
     document.getElementById('viewRankingBtn').addEventListener('click', showRankingScreen);
 
     // 랭킹 닫기 버튼
