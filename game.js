@@ -97,7 +97,7 @@ const maxFallSpeed = 15;
 
 // Enemy spawning
 let enemySpawnTimer = 0;
-let enemySpawnInterval = 180; // 3초마다 (60fps 기준)
+let enemySpawnInterval = 600; // 10초마다 (60fps 기준)
 
 // Ground platforms
 const platforms = [
@@ -140,7 +140,12 @@ const enemies = [
 
 // Stars
 const stars = [
-    { x: 700, y: 350, collected: false }
+    { x: Math.random() * 600 + 100, y: Math.random() * 300 + 100, collected: false }
+];
+
+// Hearts (생명 회복 아이템)
+const hearts = [
+    { x: Math.random() * 600 + 100, y: Math.random() * 300 + 100, collected: false }
 ];
 
 // Keyboard events
@@ -458,7 +463,12 @@ function updateEnemies() {
                 enemy.x = -1000; // Remove enemy
                 score += 100;
                 player.velocityY = -10; // Bounce
-                spawnEnemy(); // 적을 밟을 때 새로운 적 생성
+                // 5초 후에 새로운 적 생성
+                setTimeout(() => {
+                    if (gameRunning) { // 게임이 실행 중일 때만 생성
+                        spawnEnemy();
+                    }
+                }, 10000);
                 break; // 적을 밟았으면 더 이상 충돌 체크 안함
             } else {
                 loseLife();
@@ -516,6 +526,22 @@ function collectStars() {
 
             star.collected = true;
             score += 500;
+        }
+    });
+}
+
+// Collect hearts
+function collectHearts() {
+    hearts.forEach(heart => {
+        if (!heart.collected &&
+            player.x < heart.x + 30 &&
+            player.x + player.width > heart.x &&
+            player.y < heart.y + 30 &&
+            player.y + player.height > heart.y) {
+
+            heart.collected = true;
+            lives++; // 생명 +1
+            updateScoreDisplay();
         }
     });
 }
@@ -675,8 +701,13 @@ function drawPlatforms() {
         // Add brick pattern
         ctx.strokeStyle = '#654321';
         ctx.lineWidth = 2;
-        for (let i = 0; i < platform.width; i += 30) {
-            ctx.strokeRect(platform.x + i, platform.y, 30, platform.height);
+        const brickWidth = 30;
+        const numBricks = Math.ceil(platform.width / brickWidth);
+
+        for (let i = 0; i < numBricks; i++) {
+            const x = platform.x + (i * brickWidth);
+            const width = Math.min(brickWidth, platform.x + platform.width - x);
+            ctx.strokeRect(x, platform.y, width, platform.height);
         }
     });
 }
@@ -715,23 +746,20 @@ function drawCollectibles() {
 function drawStars() {
     stars.forEach(star => {
         if (!star.collected) {
-            ctx.fillStyle = '#ffff00';
-            ctx.beginPath();
-            for (let i = 0; i < 5; i++) {
-                const angle = (i * 4 * Math.PI) / 5 - Math.PI / 2;
-                const x = star.x + 12 + Math.cos(angle) * 12;
-                const y = star.y + 12 + Math.sin(angle) * 12;
-                if (i === 0) {
-                    ctx.moveTo(x, y);
-                } else {
-                    ctx.lineTo(x, y);
-                }
-            }
-            ctx.closePath();
-            ctx.fill();
-            ctx.strokeStyle = '#ffa500';
-            ctx.lineWidth = 2;
-            ctx.stroke();
+            // 별 이모지로 그리기
+            ctx.font = '40px Arial';
+            ctx.fillText('🌟', star.x, star.y + 30);
+        }
+    });
+}
+
+// Draw hearts
+function drawHearts() {
+    hearts.forEach(heart => {
+        if (!heart.collected) {
+            // 하트 이모지로 그리기
+            ctx.font = '40px Arial';
+            ctx.fillText('♥️', heart.x, heart.y + 30);
         }
     });
 }
@@ -822,12 +850,14 @@ function gameLoop() {
         updateEnemies();
         collectCollectibles();
         collectStars();
+        collectHearts();
     }
 
     // Draw game objects
     drawPlatforms();
     drawCollectibles();
     drawStars();
+    drawHearts();
     drawEnemies();
     drawPlayer();
 
