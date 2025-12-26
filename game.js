@@ -15,6 +15,9 @@ let keys = {};
 // 이전 프레임의 키 상태 (2단 점프를 위해 점프 키를 누른 순간만 감지)
 let prevKeys = {};
 
+// 아래 버튼 누름 지속 시간 관리
+let downButtonTimer = 0;
+
 // Player images
 const playerImages = {
     idle: new Image(),
@@ -143,16 +146,24 @@ const stars = [
 // Keyboard events
 document.addEventListener('keydown', (e) => {
     keys[e.code] = true;
+    // 아래 방향키를 누르면 타이머 설정
+    if (e.code === 'ArrowDown') {
+        downButtonTimer = 30; // 0.5초 (60fps 기준)
+    }
 });
 
 document.addEventListener('keyup', (e) => {
-    keys[e.code] = false;
+    // 아래 방향키는 즉시 해제하지 않고 타이머가 관리
+    if (e.code !== 'ArrowDown') {
+        keys[e.code] = false;
+    }
 });
 
 // Mobile touch controls
 function setupMobileControls() {
     const leftBtn = document.getElementById('leftBtn');
     const rightBtn = document.getElementById('rightBtn');
+    const downBtn = document.getElementById('downBtn');
     const jumpBtn = document.getElementById('jumpBtn');
 
     // 왼쪽 버튼
@@ -175,6 +186,17 @@ function setupMobileControls() {
         keys['ArrowRight'] = false;
     });
 
+    // 아래 버튼 - 짧게 눌러도 일정 시간 동안 유지
+    downBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        keys['ArrowDown'] = true;
+        downButtonTimer = 30; // 0.5초 (60fps 기준)
+    });
+    downBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        // touchend 시에는 즉시 해제하지 않고 타이머가 관리
+    });
+
     // 점프 버튼
     jumpBtn.addEventListener('touchstart', (e) => {
         e.preventDefault();
@@ -191,6 +213,14 @@ function setupMobileControls() {
 
     rightBtn.addEventListener('mousedown', () => keys['ArrowRight'] = true);
     rightBtn.addEventListener('mouseup', () => keys['ArrowRight'] = false);
+
+    downBtn.addEventListener('mousedown', () => {
+        keys['ArrowDown'] = true;
+        downButtonTimer = 30; // 0.5초 (60fps 기준)
+    });
+    downBtn.addEventListener('mouseup', () => {
+        // mouseup 시에는 즉시 해제하지 않고 타이머가 관리
+    });
 
     jumpBtn.addEventListener('mousedown', () => keys['Space'] = true);
     jumpBtn.addEventListener('mouseup', () => keys['Space'] = false);
@@ -217,9 +247,11 @@ function updatePlayer() {
         player.hitTimer--;
         if (player.hitTimer <= 0) {
             player.isHit = false;
-            // 피격 후 무적 시간 시작
-            player.invincible = true;
-            player.invincibleTimer = 120; // 2초 무적
+            // 피격 후 무적 시간 시작 (생명이 남아있을 때만)
+            if (lives > 0) {
+                player.invincible = true;
+                player.invincibleTimer = 120; // 2초 무적
+            }
         }
         // 피격 중에는 중력만 적용
         player.velocityY += gravity;
@@ -227,6 +259,12 @@ function updatePlayer() {
             player.velocityY = maxFallSpeed;
         }
         player.y += player.velocityY;
+
+        // 생명이 0이면 좌우 이동 불가
+        if (lives <= 0) {
+            player.velocityX = 0;
+        }
+
         return; // 피격 중에는 조작 불가
     }
 
@@ -298,11 +336,20 @@ function checkPlatformCollisions() {
     player.onGround = false;
 
     platforms.forEach(platform => {
+        // 아래 방향키를 누르고 있으면 플랫폼 통과 (바닥 제외)
+        const isPressingDown = keys['ArrowDown'];
+        const isGroundPlatform = platform.y >= 500; // 바닥 플랫폼은 통과 불가
+
         if (player.x < platform.x + platform.width &&
             player.x + player.width > platform.x &&
             player.y + player.height >= platform.y &&
             player.y + player.height <= platform.y + 20 &&
             player.velocityY >= 0) {
+
+            // 아래 방향키를 누르고 있고 바닥이 아니면 통과
+            if (isPressingDown && !isGroundPlatform) {
+                return; // 플랫폼 통과
+            }
 
             player.y = platform.y - player.height;
             player.velocityY = 0;
@@ -363,7 +410,9 @@ function updateEnemies() {
         }
     }
 
-    enemies.forEach(enemy => {
+    for (let i = 0; i < enemies.length; i++) {
+        const enemy = enemies[i];
+
         // 좌우 이동
         enemy.x += enemy.velocityX * enemy.direction;
 
@@ -383,7 +432,11 @@ function updateEnemies() {
         }
 
         // Bounce off edges
-        if (enemy.x <= 0 || enemy.x + enemy.width >= canvas.width) {
+        if (enemy.x <= 0) {
+            enemy.x = 0; // 왼쪽 경계에 위치 고정
+            enemy.direction *= -1;
+        } else if (enemy.x + enemy.width >= canvas.width) {
+            enemy.x = canvas.width - enemy.width; // 오른쪽 경계에 위치 고정
             enemy.direction *= -1;
         }
 
@@ -395,16 +448,24 @@ function updateEnemies() {
             player.y + player.height > enemy.y) {
 
             // Check if player jumped on enemy
-            if (player.velocityY > 0 && player.y + player.height - 10 < enemy.y) {
+            // 플레이어의 하단 1/2 영역이 적의 상단에 닿으면 적을 제거
+            const playerBottomHalf = player.y + player.height / 2;
+            const enemyTopHalf = enemy.y + enemy.height / 2;
+
+            // 플레이어가 위에서 아래로 내려오는 중이고,
+            // 플레이어의 하단 1/2 영역이 적의 상단 영역에 있으면 밟기 성공
+            if (player.velocityY > 0 && playerBottomHalf < enemyTopHalf) {
                 enemy.x = -1000; // Remove enemy
                 score += 100;
                 player.velocityY = -10; // Bounce
                 spawnEnemy(); // 적을 밟을 때 새로운 적 생성
+                break; // 적을 밟았으면 더 이상 충돌 체크 안함
             } else {
                 loseLife();
+                break; // 피격당했으면 더 이상 충돌 체크 안함
             }
         }
-    });
+    }
 }
 
 // Collect collectibles (coins and peaches)
@@ -745,6 +806,17 @@ function gameLoop() {
 
     // Update game objects only if not paused
     if (!gamePaused) {
+        // 아래 버튼 타이머 관리
+        if (downButtonTimer > 0) {
+            downButtonTimer--;
+            keys['ArrowDown'] = true;
+        } else {
+            // 키보드로 직접 누르고 있지 않으면 해제
+            if (!keys['ArrowDown'] || downButtonTimer === 0) {
+                keys['ArrowDown'] = false;
+            }
+        }
+
         updatePlayer();
         checkPlatformCollisions();
         updateEnemies();
@@ -758,6 +830,12 @@ function gameLoop() {
     drawStars();
     drawEnemies();
     drawPlayer();
+
+    // 생명이 0이면 화면을 어둡게 처리
+    if (lives <= 0) {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
 
     // Update UI
     updateScoreDisplay();
