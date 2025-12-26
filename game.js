@@ -512,6 +512,24 @@ function collectCollectibles() {
         for (let i = 0; i < 8; i++) {
             collectibles.push(createCollectible());
         }
+
+        // 30% 확률로 새로운 별 생성
+        if (Math.random() < 0.3) {
+            stars.push({
+                x: Math.random() * 600 + 100,
+                y: Math.random() * 300 + 100,
+                collected: false
+            });
+        }
+
+        // 30% 확률로 새로운 하트 생성
+        if (Math.random() < 0.3) {
+            hearts.push({
+                x: Math.random() * 600 + 100,
+                y: Math.random() * 300 + 100,
+                collected: false
+            });
+        }
     }
 }
 

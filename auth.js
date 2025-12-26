@@ -239,13 +239,16 @@ async function getRankings() {
         const { collection, query, orderBy, limit, getDocs } = window.firebaseFns;
         const db = window.db;
         try {
-            const q = query(collection(db, 'scores'), orderBy('score', 'desc'), limit(200));
+            const q = query(collection(db, 'scores'), orderBy('score', 'desc'), limit(1000));
             const snap = await getDocs(q);
             const rows = [];
             snap.forEach(doc => {
                 const data = doc.data();
                 rows.push({ nickname: data.nickname, score: data.score, date: data.createdAt ? (data.createdAt.toDate ? data.createdAt.toDate().toISOString() : data.createdAt) : new Date().toISOString() });
             });
+
+            console.log('Firebase에서 가져온 전체 데이터:', rows);
+            console.log('전체 데이터 개수:', rows.length);
 
             // Deduplicate to keep best per nickname
             const best = {};
@@ -255,6 +258,10 @@ async function getRankings() {
                 }
             }
             const rankings = Object.values(best).sort((a, b) => b.score - a.score).slice(0, 50);
+
+            console.log('중복 제거 후 랭킹:', rankings);
+            console.log('랭킹 개수:', rankings.length);
+
             return rankings;
         } catch (err) {
             console.error('Firestore 랭킹 조회 오류:', err);
